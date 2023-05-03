@@ -32,9 +32,11 @@ for i in range(100):
     x.append(i)
     y.append(i)
 
+X,Y = numpy.meshgrid(x,y)
+
 fig = p.figure() # Create figure 
 ax = fig.add_axes((0,0,1,1),projection="3d") # Plot axes 
-ax.plot_wireframe(x, y, z, color = 'r') # Red wireframe 
+ax.plot_wireframe(X, Y, z, color = 'r') # Red wireframe 
 ax.set_xlabel('X')
 ax.set_ylabel('Y')
 ax.set_zlabel('Potential')

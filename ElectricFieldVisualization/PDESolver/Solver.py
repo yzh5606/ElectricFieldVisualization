@@ -25,7 +25,7 @@ class PDEFunction(object):
             for n in (-1, 0, 1):
                 result: float
                 try:
-                    result = martix[m][n]
+                    result = martix[i+m][j+n]
                 except:
                     if default == None:
                         result = martix[i][j]
