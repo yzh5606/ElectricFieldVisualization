@@ -41,7 +41,7 @@ class PDEFunction(object):
     def getExpr(self) -> Expr:
         return self.__expr
 
-    def getSymbols(self) -> Dict[chr, Symbol]:
+    def getSymbols(self) -> Dict[str, Symbol]:
         return self.__symbols
 
     def solve(

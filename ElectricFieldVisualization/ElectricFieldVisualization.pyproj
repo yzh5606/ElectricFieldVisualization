@@ -22,6 +22,14 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="ElectricFieldVisualization.py" />
+    <Compile Include="PDESolver\Solver.py" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="PDESolver\" />
+    <Folder Include="PDESolver\__pycache__\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="PDESolver\__pycache__\Solver.cpython-311.pyc" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in
