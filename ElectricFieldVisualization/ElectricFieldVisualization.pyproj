@@ -4,13 +4,14 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>0336245b-5b0d-4a7d-b6e2-38236d64480f</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>ElectricFieldVisualization.py</StartupFile>
+    <StartupFile>test.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
     <Name>ElectricFieldVisualization</Name>
     <RootNamespace>ElectricFieldVisualization</RootNamespace>
+    <TestFramework>Pytest</TestFramework>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -23,6 +24,7 @@
   <ItemGroup>
     <Compile Include="ElectricFieldVisualization.py" />
     <Compile Include="PDESolver\Solver.py" />
+    <Compile Include="test.py" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="PDESolver\" />
