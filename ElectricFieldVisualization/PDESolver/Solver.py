@@ -8,7 +8,8 @@ from sympy.core import Expr
 from sympy.core import Symbol
 import numpy
 from numpy import ndarray
-#from scipy.ndimage._interpolation import shift
+
+# from scipy.ndimage._interpolation import shift
 from numpy.ma import MaskedArray
 
 
@@ -217,29 +218,30 @@ class TestPDEFunction(object):
         mask: ndarray[ndarray[bool]],
         xBegin: float = 0,
         yBegin: float = 0,
-        dealta: float = 0.01,
+        dealta: float = 1,
         maxIter: int = 100,
     ) -> ndarray[ndarray[float]]:
-
-        def shift(martix:ndarray[ndarray[float]],shift:tuple[int,int],cval:float=0):
+        def shift(
+            martix: ndarray[ndarray[float]], shift: tuple[int, int], cval: float = 0
+        ):
             result = numpy.empty(shape=(martix.shape[0], martix.shape[1]), dtype=float)
             result.fill(cval)
             if shift[0] > 0 and shift[1] > 0:
-                result[shift[0]:,shift[1]:] = martix[0:-shift[0],0:-shift[1]]
+                result[shift[0] :, shift[1] :] = martix[0 : -shift[0], 0 : -shift[1]]
             elif shift[0] > 0 and shift[1] < 0:
-                result[shift[0]:,0:shift[1]] = martix[0:-shift[0],-shift[1]:]
+                result[shift[0] :, 0 : shift[1]] = martix[0 : -shift[0], -shift[1] :]
             elif shift[0] < 0 and shift[1] > 0:
-                result[0:shift[0],shift[1]:] = martix[-shift[0]:,0:-shift[1]]
+                result[0 : shift[0], shift[1] :] = martix[-shift[0] :, 0 : -shift[1]]
             elif shift[0] < 0 and shift[1] < 0:
-                result[0:shift[0],0:shift[1]] = martix[-shift[0]:,-shift[1]:]
+                result[0 : shift[0], 0 : shift[1]] = martix[-shift[0] :, -shift[1] :]
             elif shift[0] == 0 and shift[1] > 0:
-                result[:,shift[1]:] = martix[:,0:-shift[1]]
+                result[:, shift[1] :] = martix[:, 0 : -shift[1]]
             elif shift[0] == 0 and shift[1] < 0:
-                result[:,0:shift[1]] = martix[:,-shift[1]:]
+                result[:, 0 : shift[1]] = martix[:, -shift[1] :]
             elif shift[0] > 0 and shift[1] == 0:
-                result[shift[0]:,:] = martix[0:-shift[0],:]
+                result[shift[0] :, :] = martix[0 : -shift[0], :]
             elif shift[0] < 0 and shift[1] == 0:
-                result[0:shift[0],:] = martix[-shift[0]:,:]
+                result[0 : shift[0], :] = martix[-shift[0] :, :]
             elif shift[0] == 0 and shift[1] == 0:
                 result = martix
             return result
@@ -305,10 +307,10 @@ class TestPDEFunction(object):
             )
             sum = ratioF - value.sum(axis=(0, 1))
             localRatio = copy.deepcopy(ratio)
-            localRatio[ratio==0]=numpy.nan
+            localRatio[ratio == 0] = numpy.nan
             for i in range(3):
                 for j in range(3):
-                    result[i][j] = (sum + value[i][j])/localRatio[i][j]
+                    result[i][j] = (sum + value[i][j]) / localRatio[i][j]
             return result
 
         localCanvas = copy.deepcopy(canvas)
@@ -329,11 +331,67 @@ class TestPDEFunction(object):
                     result[i][j] = shift(result[i][j], (1 - i, 1 - j), cval=numpy.nan)
             maskedResult = MaskedArray(
                 data=result,
-                mask=numpy.any([numpy.isnan(result),numpy.isinf(result)],axis=0),
+                mask=numpy.any([numpy.isnan(result), numpy.isinf(result)], axis=0),
                 dtype=float,
             )
-            iterResult: MaskedArray = maskedResult.mean(axis=(0, 1))
-            errNum: ndarray = iterResult.mask
-            iterResult[errNum] = localCanvas[errNum]
-            localCanvas[mask==False] = iterResult.data[mask==False]
+            agResult: MaskedArray = MaskedArray(
+                [
+                    maskedResult.data[0, 0],
+                    maskedResult.data[0, 2],
+                    maskedResult.data[2, 0],
+                    maskedResult.data[2, 2],
+                ],
+                [
+                    maskedResult.mask[0, 0],
+                    maskedResult.mask[0, 2],
+                    maskedResult.mask[2, 0],
+                    maskedResult.mask[2, 2],
+                ],
+            ).mean(axis=0, dtype=float)
+            # for _ in range(0):
+            #    rtData = numpy.append(rtData, maskedResult.data[0, 0])
+            #    rtData = numpy.append(rtData, maskedResult.data[0, 2])
+            #    rtData = numpy.append(rtData, maskedResult.data[2, 0])
+            #    rtData = numpy.append(rtData, maskedResult.data[2, 2])
+            #    rtMask = numpy.append(rtMask, maskedResult.mask[0, 0])
+            #    rtMask = numpy.append(rtMask, maskedResult.mask[0, 2])
+            #    rtMask = numpy.append(rtMask, maskedResult.mask[2, 0])
+            #    rtMask = numpy.append(rtMask, maskedResult.mask[2, 2])
+            sdResult: MaskedArray = MaskedArray(
+                [
+                    maskedResult.data[0, 1],
+                    maskedResult.data[1, 0],
+                    maskedResult.data[1, 2],
+                    maskedResult.data[2, 1],
+                ],
+                [
+                    maskedResult.mask[0, 1],
+                    maskedResult.mask[1, 0],
+                    maskedResult.mask[1, 2],
+                    maskedResult.mask[2, 1],
+                ],
+            ).mean(axis=0, dtype=float)
+            # for _ in range(0):
+            #    rtData = numpy.append(rtData, maskedResult.data[0, 1])
+            #    rtData = numpy.append(rtData, maskedResult.data[1, 0])
+            #    rtData = numpy.append(rtData, maskedResult.data[1, 2])
+            #    rtData = numpy.append(rtData, maskedResult.data[2, 1])
+            #    rtMask = numpy.append(rtMask, maskedResult.mask[0, 1])
+            #    rtMask = numpy.append(rtMask, maskedResult.mask[1, 0])
+            #    rtMask = numpy.append(rtMask, maskedResult.mask[1, 2])
+            #    rtMask = numpy.append(rtMask, maskedResult.mask[2, 1])
+            ctResult: MaskedArray = maskedResult[1, 1]
+            # for _ in range(9):
+            #    rtData = numpy.append(rtData, maskedResult.data[1, 1])
+            #    rtMask = numpy.append(rtMask, maskedResult.mask[1, 1])
+            iterResult = ctResult
+            iterResult[iterResult.mask] = sdResult[iterResult.mask]
+            iterResult[iterResult.mask] = agResult[iterResult.mask]
+            #rtData = rtData.reshape((9, canvas.shape[0], canvas.shape[1]))
+            #rtMask = rtMask.reshape((9, canvas.shape[0], canvas.shape[1]))
+            #rtResult = MaskedArray(rtData, rtMask)
+            #iterResult: MaskedArray = rtResult.mean(axis=0)
+            #errNum: ndarray = iterResult.mask
+            iterResult[iterResult.mask] = localCanvas[iterResult.mask]
+            localCanvas[mask == False] = iterResult.data[mask == False]
         return localCanvas

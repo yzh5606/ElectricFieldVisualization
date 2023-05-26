@@ -2,9 +2,9 @@ import numpy
 from PDESolver.Solver import TestPDEFunction
 import matplotlib.pylab as p
 
-func = TestPDEFunction(A=lambda x,y:1,C=lambda x,y:1)
+func = TestPDEFunction(D=lambda x,y:1,E=lambda x,y:1)
 
-Nmax = 50
+Nmax = 100
 canvas = numpy.zeros((Nmax, Nmax), float)
 mask = numpy.zeros((Nmax, Nmax), bool)
 
@@ -17,7 +17,7 @@ mask[:,-2:]=True
 
 x = []
 y = []
-z = func.solve(canvas,mask,maxIter=100)
+z = func.solve(canvas,mask,maxIter=1000)
 
 
 
