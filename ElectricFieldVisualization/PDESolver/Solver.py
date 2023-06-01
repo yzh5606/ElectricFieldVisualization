@@ -155,8 +155,6 @@ class TestPDEFunction(object):
     E\frac{\partial U}{\partial y}=
     F
     $$
-
-    @preview 不稳定版本
     """
 
     __args: list[factor_]
@@ -180,6 +178,7 @@ class TestPDEFunction(object):
         yBegin: float = 0,
         dealta: float = 1,
         maxIter: int = 100,
+        expansion: int = 2,
     ) -> canvas_:
         def expand(array: canvas_, x: int, y: int):
             shape_x, shape_y = array.shape
@@ -208,10 +207,10 @@ class TestPDEFunction(object):
             return result
 
         localCanvas = copy.deepcopy(canvas)
-        localCanvas = expand(localCanvas, 2, 2)
+        localCanvas = expand(localCanvas, expansion, expansion)
         localMask = copy.deepcopy(mask)
-        localMask = expand(localMask, 2, 2)
-        dealta = dealta / 2
+        localMask = expand(localMask, expansion, expansion)
+        dealta = dealta / expansion
 
         def getRatio(
             x: canvas_,
@@ -297,7 +296,7 @@ class TestPDEFunction(object):
         ratio, ratioF = getRatio(X, Y)
         for r in range(maxIter):
             if r != 0:
-                localCanvas = expand(localCanvas, 2, 2)
+                localCanvas = expand(localCanvas, expansion, expansion)
             value = getValue(ratio, localCanvas)
             result = getResult(value, ratio, ratioF)
             tmpResult = MaskedArray(
@@ -359,5 +358,5 @@ class TestPDEFunction(object):
             iterResult[iterResult.mask] = localCanvas[1:-1, 1:-1][iterResult.mask]
             rdMask: rdCanvas_ = localMask[1:-1, 1:-1]
             localCanvas[1:-1, 1:-1][rdMask == False] = iterResult.data[rdMask == False]
-            localCanvas = expand(localCanvas, -2, -2)
+            localCanvas = expand(localCanvas, -expansion, -expansion)
         return localCanvas
