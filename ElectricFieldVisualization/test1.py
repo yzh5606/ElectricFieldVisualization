@@ -14,23 +14,29 @@ eq = d + e - 2
 
 solver = PDEFunction(eq,d=d,e=e)
 
+# canvas: 设定的初始值
+# mask: 用于确定哪些值是不可变更的，记录为True
 canvas = []
 mask = []
 
-for i in range(20):
+size = 50
+
+for i in range(size):
     canvas.append([])
     mask.append([])
     canvas[i].append(100)
     mask[i].append(True)
-    for j in range(19):
+    for j in range(size - 1):
         canvas[i].append(0)
         mask[i].append(False)
 
-result = solver.solve(canvas,mask,maxIter=10)
+result = solver.solve(canvas,mask,maxIter=20)
 
 x = []
 y = []
 z = numpy.array(result)
+
+# 以下为画图部分
 
 for i in range(20):
     x.append(i)

@@ -158,6 +158,7 @@ class TestPDEFunction(object):
     """
 
     __args: list[factor_]
+    # 所有的系数表达式都存在这里了
 
     def __init__(
         self,
@@ -168,6 +169,16 @@ class TestPDEFunction(object):
         E: factor_ = lambda x, y: 0,
         F: factor_ = lambda x, y: 0,
     ) -> None:
+        """
+        构建表达式，以供计算
+        其中，A,B,C不应该全为零
+        @param A 系数A，关于x,y的表达式
+        @param B 系数B，关于x,y的表达式
+        @param C 系数C，关于x,y的表达式
+        @param D 系数D，关于x,y的表达式
+        @param E 系数E，关于x,y的表达式
+        @param F 系数F，关于x,y的表达式
+        """
         self.__args = [A, B, C, D, E, F]
 
     def solve(
@@ -180,7 +191,26 @@ class TestPDEFunction(object):
         maxIter: int = 100,
         expansion: int = 2,
     ) -> canvas_:
+        """
+        对函数进行数值求解
+        @param canvas 初始值，并且限定画布范围
+        @param mask 掩码，用于确定画布上的那些值是固定不变的，标记为True
+        @param xBegin 确定画布上[0][0]的点代表的x的值
+        @param yBegin 确定画布上[0][0]的点代表的y的值
+        @param delta 各相邻点之间所代表的x或y值之差
+        @param maxIter 迭代次数
+        @param expansion 在计算前将画布扩大，以提升精确度
+        @return 计算结果画布
+        """
+
         def expand(array: canvas_, x: int, y: int):
+            """
+            将画布扩大（正数）或缩小（负数）x,y倍
+            @param array 画布
+            @param x x轴缩放比例
+            @param y y轴缩放比例
+            @return 结果画布
+            """
             shape_x, shape_y = array.shape
             if x > 0:
                 shape_x = shape_x * x
@@ -206,7 +236,7 @@ class TestPDEFunction(object):
                     result[:, i] = tmp[:, -i * y : -(i + 1) * y].mean(1)
             return result
 
-        localCanvas = copy.deepcopy(canvas)
+        localCanvas = copy.deepcopy(canvas)  # 深拷贝，防止直接修改实参
         localCanvas = expand(localCanvas, expansion, expansion)
         localMask = copy.deepcopy(mask)
         localMask = expand(localMask, expansion, expansion)
@@ -216,6 +246,14 @@ class TestPDEFunction(object):
             x: canvas_,
             y: canvas_,
         ) -> tuple[ndarray[canvas_, Any], canvas_]:
+            """
+            获得系数的值
+            什么是系数？参见INFO.md
+            访问时先访问系数位置（例如$+\frac{B}{4\Delta^2}$就在[0,0]）,再访问值位置
+            @param x x坐标
+            @param y y坐标
+            @return 所有的坐标下的系数值，以及F的值
+            """
             localArgs = []
             for i in range(6):
                 localArgs.append(self.__args[i](x, y))
@@ -253,6 +291,12 @@ class TestPDEFunction(object):
             ratio: ndarray[canvas_, Any],
             canvas: canvas_,
         ) -> ndarray[rdCanvas_, Any]:
+            """
+            获得系数乘上旧迭代值的结果
+            @param ratio 所有系数值
+            @param canvas 旧的迭代值
+            @return 所有相乘后的值
+            """
             result = numpy.empty(
                 shape=(3, 3, localCanvas.shape[0] - 2, localCanvas.shape[1] - 2),
                 dtype=float,
@@ -277,6 +321,13 @@ class TestPDEFunction(object):
                 shape=(3, 3, localCanvas.shape[0] - 2, localCanvas.shape[1] - 2),
                 dtype=float,
             )
+            """
+            获得新的迭代结果值
+            @param value getValue的返回值
+            @param ratio 所有系数的值
+            @param ratioF 所有系数F的值
+            @return 新的迭代结果
+            """
             sum: rdCanvas_ = ratioF[1:-1, 1:-1] - value.sum(axis=(0, 1))
             localRatio: ndarray[rdCanvas_, Any] = copy.deepcopy(ratio[:, :, 1:-1, 1:-1])
             rdRatio: ndarray[rdCanvas_, Any] = ratio[:, :, 1:-1, 1:-1]
@@ -295,14 +346,14 @@ class TestPDEFunction(object):
         Y, X = numpy.meshgrid(y, x)
         ratio, ratioF = getRatio(X, Y)
         for r in range(maxIter):
-            if r != 0:
+            if r != 0:  # 由于r=0时已经扩大过一次画布，故跳过
                 localCanvas = expand(localCanvas, expansion, expansion)
             value = getValue(ratio, localCanvas)
             result = getResult(value, ratio, ratioF)
             tmpResult = MaskedArray(
                 numpy.empty(ratio.shape, float),
                 numpy.zeros(ratio.shape, bool) == False,
-            )
+            )  # 带掩码ndarray数组，第二个参数为掩码，标记为True所对应的第一个参数数组为无效值
             for i in range(3):
                 for j in range(3):
                     tmpResult[
@@ -312,8 +363,9 @@ class TestPDEFunction(object):
                         j : j + localCanvas.shape[0] - 2,
                     ] = result[i, j]
             maskedResult: MaskedArray = tmpResult[:, :, 1:-1, 1:-1]
+            # 以上部分是将result数组移了位置，以便于求均值操作
             maskedResult.mask = maskedResult.mask | numpy.isnan(maskedResult.data)
-
+            # 排除错误数据
             def maskArr(i: int, j: int) -> None:
                 maskedResult.mask[i, j] = maskedResult.mask[2 - i, 2 - j] = (
                     maskedResult.mask[i, j] | maskedResult.mask[2 - i, 2 - j]
@@ -323,6 +375,7 @@ class TestPDEFunction(object):
             maskArr(1, 0)
             maskArr(2, 0)
             maskArr(0, 1)
+            # 这一部分是为了防止出现边界值异常情况（但好像没什么用？）
             agResult = MaskedArray(
                 [
                     maskedResult.data[0, 0],
@@ -352,11 +405,15 @@ class TestPDEFunction(object):
                 ],
             ).mean(axis=0, dtype=float)
             ctResult: MaskedArray = maskedResult[1, 1]
+            # 所以，上面这玩意你知道是对那些值求均值的，对吧
             iterResult = ctResult
             iterResult[iterResult.mask] = sdResult[iterResult.mask]
             iterResult[iterResult.mask] = agResult[iterResult.mask]
             iterResult[iterResult.mask] = localCanvas[1:-1, 1:-1][iterResult.mask]
+            # 优先顺序：ctResult>sdResult>agResult>旧值
             rdMask: rdCanvas_ = localMask[1:-1, 1:-1]
             localCanvas[1:-1, 1:-1][rdMask == False] = iterResult.data[rdMask == False]
+            # 考虑传入的mask参数
             localCanvas = expand(localCanvas, -expansion, -expansion)
+            # 将画布恢复为原来的形状
         return localCanvas
