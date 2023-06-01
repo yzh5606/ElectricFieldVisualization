@@ -7,32 +7,32 @@ import numpy
 
 # 定义符号，用于表示各种偏导数
 # 此处a为对x的二阶导，c为对y的二阶导
-a=sympy.symbols("a")
-c=sympy.symbols("c")
+d=sympy.symbols("d")
+e=sympy.symbols("e")
 
-eq = a + c
+eq = d + e - 2
 
-solver = PDEFunction(eq,a=a,c=c)
+solver = PDEFunction(eq,d=d,e=e)
 
 canvas = []
 mask = []
 
-for i in range(100):
+for i in range(20):
     canvas.append([])
     mask.append([])
     canvas[i].append(100)
     mask[i].append(True)
-    for j in range(99):
+    for j in range(19):
         canvas[i].append(0)
         mask[i].append(False)
 
-result = solver.solve(canvas,mask,maxIter=20)
+result = solver.solve(canvas,mask,maxIter=10)
 
 x = []
 y = []
 z = numpy.array(result)
 
-for i in range(100):
+for i in range(20):
     x.append(i)
     y.append(i)
 

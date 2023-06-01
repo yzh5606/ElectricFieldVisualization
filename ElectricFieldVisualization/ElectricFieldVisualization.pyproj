@@ -4,7 +4,8 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>0336245b-5b0d-4a7d-b6e2-38236d64480f</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>test.py</StartupFile>
+    <StartupFile>
+    </StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -22,9 +23,9 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="ElectricFieldVisualization.py" />
     <Compile Include="PDESolver\Solver.py" />
-    <Compile Include="test.py" />
+    <Compile Include="test1.py" />
+    <Compile Include="test2.py" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="PDESolver\" />

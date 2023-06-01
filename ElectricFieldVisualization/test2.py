@@ -4,10 +4,10 @@ import matplotlib.pylab as p
 
 func = TestPDEFunction(
     A=lambda x, y: 0,
-    B=lambda x, y: 0,
-    C=lambda x, y: 0,
-    D=lambda x, y: 1,
-    E=lambda x, y: 1,
+    B=lambda x, y: 0.1,
+    C=lambda x, y: 0.1,
+    D=lambda x, y: 0,
+    E=lambda x, y: 0,
     F=lambda x, y: 0,
 )
 
@@ -15,17 +15,17 @@ Nmax = 100
 canvas = numpy.zeros((Nmax, Nmax), float)
 mask = numpy.zeros((Nmax, Nmax), bool)
 
-canvas[:,0] = 100.0  # Line at 100V
+canvas[50,50] = 100.0  # Line at 100V
 
 # mask[:,0:1]=True
 # mask[:,-1:]=True
 # mask[0:1,:]=True
 # mask[-1:,:]=True
-mask[:,0] = True
+mask[50,50] = True
 
 x = []
 y = []
-z = func.solve(canvas, mask, maxIter=1000)
+z = func.solve(canvas, mask, maxIter=500,expansion=3)
 
 
 for i in range(100):
