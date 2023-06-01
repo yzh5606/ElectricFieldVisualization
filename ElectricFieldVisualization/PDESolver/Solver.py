@@ -1,34 +1,33 @@
-from ast import Import
-from typing import Callable, Dict, List, Final, Optional, Tuple
-import time
+from typing import Callable, Final, Union, Any
 import copy
 import sympy
-from sympy import symbols
 from sympy.core import Expr
 from sympy.core import Symbol
 import numpy
 from numpy import ndarray
-
-# from scipy.ndimage._interpolation import shift
 from numpy.ma import MaskedArray
+
+
+canvas_ = ndarray
+rdCanvas_ = ndarray
+factor_ = Callable[[canvas_, canvas_], Union[canvas_, float]]
 
 
 class PDEFunction(object):
     """
     利用sympy对表达式进行化简
-
     @deprecated 由于速度太慢，不建议使用
     """
 
     __expr: Expr
     # 用于存储输入的expr
-    __symbols: Dict[chr, Symbol]
+    __symbols: dict[str, Symbol]
     # 用于存储输入的符号对应表
-    __centre: Final[Symbol] = symbols("centre")
+    __centre: Final[Symbol] = sympy.symbols("centre")
     # 创建一个变量，用于代表中间的待计算的数值
 
     def __init__(self, expr: Expr, **symbols: Symbol) -> None:
-        """
+        r"""
         构建表达式，以供计算
 
         @param expr 待计算的表达式
@@ -38,39 +37,23 @@ class PDEFunction(object):
         $\frac{\partial^2 U}{\partial y^2}$,
         $\frac{\partial U}{\partial x}$,
         $\frac{\partial U}{\partial y}$
+        以及x,y
         """
         self.__expr = expr
         self.__symbols = symbols
 
-    def getExpr(self) -> Expr:
-        """
-        返回已保存的表达式
-
-        @return 已保存的表达式
-        """
-        return self.__expr
-
-    def getSymbols(self) -> Dict[str, Symbol]:
-        """
-        返回已保存的符号列表
-
-        @return 已保存的符号列表
-        """
-        return self.__symbols
-
     def solve(
         self,
-        canvas: List[List[float]],
-        mask: List[List[bool]],
+        canvas: list[list[float]],
+        mask: list[list[bool]],
         xBegin: float = 0,
         yBegin: float = 0,
         dealta: float = 1,
-        default: float = 0,
+        default: float = 0.0,
         maxIter: int = 100,
-    ) -> List[List[float]]:
+    ) -> list[list[float]]:
         """
         对函数进行数值求解
-
         @param canvas 初始值，并且限定画布范围
         @param mask 掩码，用于确定画布上的那些值是固定不变的，标记为True
         @param xBegin 确定画布上[0][0]的点代表的x的值
@@ -78,28 +61,24 @@ class PDEFunction(object):
         @param delta 各相邻点之间所代表的x或y值之差
         @param default 画布边界点的默认值
         @param maxIter 迭代次数
-
         @return 计算结果画布
         """
 
-        def __getValue(
-            self,
-            martix: List[List[float]],
+        def getValue(
+            martix: list[list[float]],
             i: int,
             j: int,
-            default: float = 0,
-        ) -> List[float]:
+            default: float = 0.0,
+        ) -> list[float]:
             """
             用于获取给定点的周围数值，若无法获取，值为default
-
             @param martix 源数据
             @param i 给定点在martix中的i坐标
             @param j 给定点在martix中的j坐标
             @param default 当值无法获取时的默认值
-
             @return 代表martix[i-1][j-1],martix[i-1][j],martix[i-1][j+1],...,martix[i+1][j+1]值的列表
             """
-            params: List[float] = list()
+            params: list[float] = list()
             for m in (-1, 0, 1):
                 for n in (-1, 0, 1):
                     result: float
@@ -113,10 +92,10 @@ class PDEFunction(object):
                     params.append(result)
             return params
 
-        # bufTime = time.time()
-        result = copy.deepcopy(canvas)
-        # print(str(0) + " " + str(time.time() - bufTime))
-        for n in range(maxIter):
+        symbols = self.__symbols
+        centre = self.__centre
+        result = copy.deepcopy(canvas)  # 将输入的canvas拷贝一遍，以防直接对实参进行修改
+        for n in range(maxIter):  # 循环迭代
             for i in range(len(canvas)):
                 for j in range(len(canvas[i])):
                     if mask[i][j]:
@@ -124,66 +103,48 @@ class PDEFunction(object):
                         continue
                     else:
                         # 将偏导数用近似值取代
-                        params = self.__getValue(result, i, j, default)
-                        rules: Dict[Symbol, Expr] = dict()
-                        keys = self.__symbols.keys()
+                        params = getValue(result, i, j, default)  # 获得result[i][j]周围的值
+                        rules: dict[Symbol, Union[Expr, float]] = dict()  # 记录替换规则
+                        keys = symbols.keys()  # 确定调用时函数中有没有偏导数
                         if "a" in keys:
                             rules.update(
                                 {
-                                    self.__symbols["a"]: (
-                                        params[5] + params[3] - 2 * self.__centre
-                                    )
+                                    symbols["a"]: (params[5] + params[3] - 2 * centre)
                                     / dealta**2
                                 }
                             )
                         if "b" in keys:
                             rules.update(
                                 {
-                                    self.__symbols["b"]: (
-                                        params[2] + params[6] - 2 * self.__centre
-                                    )
+                                    symbols["b"]: (params[2] + params[6] - 2 * centre)
                                     / (2 * dealta**2)
                                 }
                             )
                         if "c" in keys:
                             rules.update(
                                 {
-                                    self.__symbols["c"]: (
-                                        params[1] + params[7] - 2 * self.__centre
-                                    )
+                                    symbols["c"]: (params[1] + params[7] - 2 * centre)
                                     / dealta**2
                                 }
                             )
                         if "d" in keys:
-                            rules.update(
-                                {
-                                    self.__symbols["d"]: (params[5] - self.__centre)
-                                    / dealta
-                                }
-                            )
+                            rules.update({symbols["d"]: (params[5] - centre) / dealta})
                         if "e" in keys:
-                            rules.update(
-                                {
-                                    self.__symbols["e"]: (params[1] - self.__centre)
-                                    / dealta
-                                }
-                            )
+                            rules.update({symbols["e"]: (params[1] - centre) / dealta})
                         # 将x,y值代入
                         if "x" in keys:
-                            rules.update({self.__symbols["x"]: xBegin + i * dealta})
+                            rules.update({symbols["x"]: xBegin + i * dealta})
                         if "y" in keys:
-                            rules.update({self.__symbols["y"]: yBegin + j * dealta})
+                            rules.update({symbols["y"]: yBegin + j * dealta})
                         # 应用规则
                         eq = self.__expr.subs(rules)
                         # 解出值
-                        result[i][j] = sympy.solve(eq, self.__centre)[0].evalf(3)
-            # print(str(n + 1) + " " + str(time.time() - bufTime))
-            # bufTime = time.time()
+                        result[i][j] = sympy.solve(eq, centre)[0].evalf(3)
         return result
 
 
 class TestPDEFunction(object):
-    """
+    r"""
     利用numpy对表达式进行并行计算
     函数应先化简为标准形式，并给出各个系数的表达式
     $$
@@ -198,64 +159,70 @@ class TestPDEFunction(object):
     @preview 不稳定版本
     """
 
+    __args: list[factor_]
+
     def __init__(
         self,
-        A: Callable[[float, float], float] = lambda x, y: 0,
-        B: Callable[[float, float], float] = lambda x, y: 0,
-        C: Callable[[float, float], float] = lambda x, y: 0,
-        D: Callable[[float, float], float] = lambda x, y: 0,
-        E: Callable[[float, float], float] = lambda x, y: 0,
-        F: Callable[[float, float], float] = lambda x, y: 0,
+        A: factor_ = lambda x, y: 0,
+        B: factor_ = lambda x, y: 0,
+        C: factor_ = lambda x, y: 0,
+        D: factor_ = lambda x, y: 0,
+        E: factor_ = lambda x, y: 0,
+        F: factor_ = lambda x, y: 0,
     ) -> None:
-        self.__args: Final[Tuple[Callable[[float, float], float]]] = (A, B, C, D, E, F)
-
-    def getArgs(self) -> Tuple[Callable[[float, float], float]]:
-        return self.__args
+        self.__args = [A, B, C, D, E, F]
 
     def solve(
         self,
-        canvas: ndarray[ndarray[float]],
-        mask: ndarray[ndarray[bool]],
+        canvas: canvas_,
+        mask: canvas_,
         xBegin: float = 0,
         yBegin: float = 0,
         dealta: float = 1,
         maxIter: int = 100,
-    ) -> ndarray[ndarray[float]]:
-        def shift(
-            martix: ndarray[ndarray[float]], shift: tuple[int, int], cval: float = 0
-        ):
-            result = numpy.empty(shape=(martix.shape[0], martix.shape[1]), dtype=float)
-            result.fill(cval)
-            if shift[0] > 0 and shift[1] > 0:
-                result[shift[0] :, shift[1] :] = martix[0 : -shift[0], 0 : -shift[1]]
-            elif shift[0] > 0 and shift[1] < 0:
-                result[shift[0] :, 0 : shift[1]] = martix[0 : -shift[0], -shift[1] :]
-            elif shift[0] < 0 and shift[1] > 0:
-                result[0 : shift[0], shift[1] :] = martix[-shift[0] :, 0 : -shift[1]]
-            elif shift[0] < 0 and shift[1] < 0:
-                result[0 : shift[0], 0 : shift[1]] = martix[-shift[0] :, -shift[1] :]
-            elif shift[0] == 0 and shift[1] > 0:
-                result[:, shift[1] :] = martix[:, 0 : -shift[1]]
-            elif shift[0] == 0 and shift[1] < 0:
-                result[:, 0 : shift[1]] = martix[:, -shift[1] :]
-            elif shift[0] > 0 and shift[1] == 0:
-                result[shift[0] :, :] = martix[0 : -shift[0], :]
-            elif shift[0] < 0 and shift[1] == 0:
-                result[0 : shift[0], :] = martix[-shift[0] :, :]
-            elif shift[0] == 0 and shift[1] == 0:
-                result = martix
+    ) -> canvas_:
+        def expand(array: canvas_, x: int, y: int):
+            shape_x, shape_y = array.shape
+            if x > 0:
+                shape_x = shape_x * x
+            if x < 0:
+                shape_x = shape_x // (-x)
+            tmp = numpy.empty((shape_x, shape_y), float)
+            if x > 0:
+                for i in range(array.shape[0]):
+                    tmp[i * x : (i + 1) * x, :] = array[i : i + 1, :]
+            if x < 0:
+                for i in range(tmp.shape[0]):
+                    tmp[i, :] = array[-i * x : -(i + 1) * x, :].mean(0)
+            if y > 0:
+                shape_y = shape_y * y
+            if y < 0:
+                shape_y = shape_y // (-y)
+            result = numpy.empty((shape_x, shape_y), float)
+            if y > 0:
+                for i in range(tmp.shape[1]):
+                    result[:, i * y : (i + 1) * y] = tmp[:, i : i + 1]
+            if y < 0:
+                for i in range(result.shape[1]):
+                    result[:, i] = tmp[:, -i * y : -(i + 1) * y].mean(1)
             return result
 
+        localCanvas = copy.deepcopy(canvas)
+        localCanvas = expand(localCanvas, 2, 2)
+        localMask = copy.deepcopy(mask)
+        localMask = expand(localMask, 2, 2)
+        dealta = dealta / 2
+
         def getRatio(
-            x: ndarray[ndarray[float]],
-            y: ndarray[ndarray[float]],
-        ) -> tuple[ndarray[ndarray[ndarray[ndarray[float]]]], ndarray[ndarray[float]]]:
+            x: canvas_,
+            y: canvas_,
+        ) -> tuple[ndarray[canvas_, Any], canvas_]:
             localArgs = []
             for i in range(6):
-                localArgs.append(args[i](x, y))
+                localArgs.append(self.__args[i](x, y))
             for i in range(6):
                 if type(localArgs[i]) != ndarray:
-                    tmp = numpy.empty(shape=canvas.shape, dtype=float)
+                    tmp = numpy.empty(shape=localCanvas.shape, dtype=float)
                     tmp.fill(localArgs[i])
                     localArgs[i] = tmp
             result = (
@@ -284,57 +251,80 @@ class TestPDEFunction(object):
             return result
 
         def getValue(
-            ratio: ndarray[ndarray[ndarray[ndarray[float]]]],
-            canvas: ndarray[ndarray[float]],
-        ) -> ndarray[ndarray[ndarray[ndarray[float]]]]:
+            ratio: ndarray[canvas_, Any],
+            canvas: canvas_,
+        ) -> ndarray[rdCanvas_, Any]:
             result = numpy.empty(
-                shape=(3, 3, canvas.shape[0], canvas.shape[1]), dtype=float
+                shape=(3, 3, localCanvas.shape[0] - 2, localCanvas.shape[1] - 2),
+                dtype=float,
             )
             for i in range(3):
                 for j in range(3):
-                    result[i, j] = ratio[i, j] * shift(
-                        canvas, (1 - i, 1 - j), cval=numpy.nan
+                    result[i, j] = (
+                        ratio[i, j, 1:-1, 1:-1]
+                        * canvas[
+                            i : i + localCanvas.shape[0] - 2,
+                            j : j + localCanvas.shape[1] - 2,
+                        ]
                     )
             return result
 
         def getResult(
-            value: ndarray[ndarray[ndarray[ndarray[float]]]],
-            ratio: ndarray[ndarray[ndarray[ndarray[float]]]],
-            ratioF: ndarray[ndarray[float]],
-        ) -> ndarray[ndarray[ndarray[ndarray[float]]]]:
-            result = numpy.empty(
-                shape=(3, 3, canvas.shape[0], canvas.shape[1]), dtype=float
+            value: ndarray[rdCanvas_, Any],
+            ratio: ndarray[canvas_, Any],
+            ratioF: canvas_,
+        ) -> ndarray[rdCanvas_, Any]:
+            result: ndarray[rdCanvas_, Any] = numpy.empty(
+                shape=(3, 3, localCanvas.shape[0] - 2, localCanvas.shape[1] - 2),
+                dtype=float,
             )
-            sum = ratioF - value.sum(axis=(0, 1))
-            localRatio = copy.deepcopy(ratio)
-            localRatio[ratio == 0] = numpy.nan
+            sum: rdCanvas_ = ratioF[1:-1, 1:-1] - value.sum(axis=(0, 1))
+            localRatio: ndarray[rdCanvas_, Any] = copy.deepcopy(ratio[:, :, 1:-1, 1:-1])
+            rdRatio: ndarray[rdCanvas_, Any] = ratio[:, :, 1:-1, 1:-1]
+            localRatio[rdRatio == 0] = numpy.nan
             for i in range(3):
                 for j in range(3):
                     result[i][j] = (sum + value[i][j]) / localRatio[i][j]
             return result
 
-        localCanvas = copy.deepcopy(canvas)
-        args = self.__args
         x = numpy.linspace(
-            xBegin, xBegin + dealta * (canvas.shape[0] - 1), canvas.shape[0]
+            xBegin, xBegin + dealta * (localCanvas.shape[0] - 1), localCanvas.shape[0]
         )
         y = numpy.linspace(
-            yBegin, yBegin + dealta * (canvas.shape[1] - 1), canvas.shape[1]
+            yBegin, yBegin + dealta * (localCanvas.shape[1] - 1), localCanvas.shape[1]
         )
         Y, X = numpy.meshgrid(y, x)
         ratio, ratioF = getRatio(X, Y)
-        for _ in range(maxIter):
+        for r in range(maxIter):
+            if r != 0:
+                localCanvas = expand(localCanvas, 2, 2)
             value = getValue(ratio, localCanvas)
             result = getResult(value, ratio, ratioF)
+            tmpResult = MaskedArray(
+                numpy.empty(ratio.shape, float),
+                numpy.zeros(ratio.shape, bool) == False,
+            )
             for i in range(3):
                 for j in range(3):
-                    result[i][j] = shift(result[i][j], (1 - i, 1 - j), cval=numpy.nan)
-            maskedResult = MaskedArray(
-                data=result,
-                mask=numpy.any([numpy.isnan(result), numpy.isinf(result)], axis=0),
-                dtype=float,
-            )
-            agResult: MaskedArray = MaskedArray(
+                    tmpResult[
+                        i,
+                        j,
+                        i : i + localCanvas.shape[0] - 2,
+                        j : j + localCanvas.shape[0] - 2,
+                    ] = result[i, j]
+            maskedResult: MaskedArray = tmpResult[:, :, 1:-1, 1:-1]
+            maskedResult.mask = maskedResult.mask | numpy.isnan(maskedResult.data)
+
+            def maskArr(i: int, j: int) -> None:
+                maskedResult.mask[i, j] = maskedResult.mask[2 - i, 2 - j] = (
+                    maskedResult.mask[i, j] | maskedResult.mask[2 - i, 2 - j]
+                )
+
+            maskArr(0, 0)
+            maskArr(1, 0)
+            maskArr(2, 0)
+            maskArr(0, 1)
+            agResult = MaskedArray(
                 [
                     maskedResult.data[0, 0],
                     maskedResult.data[0, 2],
@@ -348,15 +338,6 @@ class TestPDEFunction(object):
                     maskedResult.mask[2, 2],
                 ],
             ).mean(axis=0, dtype=float)
-            # for _ in range(0):
-            #    rtData = numpy.append(rtData, maskedResult.data[0, 0])
-            #    rtData = numpy.append(rtData, maskedResult.data[0, 2])
-            #    rtData = numpy.append(rtData, maskedResult.data[2, 0])
-            #    rtData = numpy.append(rtData, maskedResult.data[2, 2])
-            #    rtMask = numpy.append(rtMask, maskedResult.mask[0, 0])
-            #    rtMask = numpy.append(rtMask, maskedResult.mask[0, 2])
-            #    rtMask = numpy.append(rtMask, maskedResult.mask[2, 0])
-            #    rtMask = numpy.append(rtMask, maskedResult.mask[2, 2])
             sdResult: MaskedArray = MaskedArray(
                 [
                     maskedResult.data[0, 1],
@@ -371,27 +352,12 @@ class TestPDEFunction(object):
                     maskedResult.mask[2, 1],
                 ],
             ).mean(axis=0, dtype=float)
-            # for _ in range(0):
-            #    rtData = numpy.append(rtData, maskedResult.data[0, 1])
-            #    rtData = numpy.append(rtData, maskedResult.data[1, 0])
-            #    rtData = numpy.append(rtData, maskedResult.data[1, 2])
-            #    rtData = numpy.append(rtData, maskedResult.data[2, 1])
-            #    rtMask = numpy.append(rtMask, maskedResult.mask[0, 1])
-            #    rtMask = numpy.append(rtMask, maskedResult.mask[1, 0])
-            #    rtMask = numpy.append(rtMask, maskedResult.mask[1, 2])
-            #    rtMask = numpy.append(rtMask, maskedResult.mask[2, 1])
             ctResult: MaskedArray = maskedResult[1, 1]
-            # for _ in range(9):
-            #    rtData = numpy.append(rtData, maskedResult.data[1, 1])
-            #    rtMask = numpy.append(rtMask, maskedResult.mask[1, 1])
             iterResult = ctResult
             iterResult[iterResult.mask] = sdResult[iterResult.mask]
             iterResult[iterResult.mask] = agResult[iterResult.mask]
-            #rtData = rtData.reshape((9, canvas.shape[0], canvas.shape[1]))
-            #rtMask = rtMask.reshape((9, canvas.shape[0], canvas.shape[1]))
-            #rtResult = MaskedArray(rtData, rtMask)
-            #iterResult: MaskedArray = rtResult.mean(axis=0)
-            #errNum: ndarray = iterResult.mask
-            iterResult[iterResult.mask] = localCanvas[iterResult.mask]
-            localCanvas[mask == False] = iterResult.data[mask == False]
+            iterResult[iterResult.mask] = localCanvas[1:-1, 1:-1][iterResult.mask]
+            rdMask: rdCanvas_ = localMask[1:-1, 1:-1]
+            localCanvas[1:-1, 1:-1][rdMask == False] = iterResult.data[rdMask == False]
+            localCanvas = expand(localCanvas, -2, -2)
         return localCanvas
