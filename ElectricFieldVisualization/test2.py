@@ -6,9 +6,9 @@ import matplotlib.pylab as p
 # 也就是说，“以函数作为参数传入”
 
 func = TestPDEFunction(
-    A=lambda x, y: x,
+    A=lambda x, y: 1,
     B=lambda x, y: 0,
-    C=lambda x, y: y,
+    C=lambda x, y: 1,
     D=lambda x, y: 0,
     E=lambda x, y: 0,
     F=lambda x, y: 0,
@@ -18,13 +18,13 @@ Nmax = 100 # 画布大小
 canvas = numpy.zeros((Nmax, Nmax), float)
 mask = numpy.zeros((Nmax, Nmax), bool)
 
-canvas[50,50] = 100.0  # Line at 100V
+canvas[:,0:1] = 100.0  # Line at 100V
 
 # mask[:,0:1]=True
 # mask[:,-1:]=True
 # mask[0:1,:]=True
 # mask[-1:,:]=True
-mask[50,50] = True
+mask[:,0:1] = True
 
 x = []
 y = []
