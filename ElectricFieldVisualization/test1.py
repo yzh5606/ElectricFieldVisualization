@@ -10,7 +10,7 @@ import numpy
 a=sympy.symbols("a")
 c=sympy.symbols("c")
 
-eq = a + c - 2
+eq = a + c
 # 这里a代表U对x的二阶偏导，c代表U对y的二阶偏导，因此，它描述了一个方程：
 # $\frac{\partial^2 U}{\partial x^2}+\frac{\partial^2 U}{\partial y^2}=0$
 

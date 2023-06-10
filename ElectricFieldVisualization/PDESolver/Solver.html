@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Python: module Solver</title>
+</head><body>
+
+<table class="heading">
+<tr class="heading-text decor">
+<td class="title">&nbsp;<br><strong class="title">Solver</strong></td>
+<td class="extra"><a href=".">index</a><br><a href="file:c%3A%5Cusers%5Cadministrator%5Csource%5Crepos%5Celectricfieldvisualization%5Celectricfieldvisualization%5Cpdesolver%5Csolver.py">c:\users\administrator\source\repos\electricfieldvisualization\electricfieldvisualization\pdesolver\solver.py</a></td></tr></table>
+    <p><span class="code">#&nbsp;尽管python是弱类型语言，但是为了使得程序更清楚，我们依然使用了类型注释</span></p>
+<p>
+<table class="section">
+<tr class="decor pkg-content-decor heading-text">
+<td class="section-title" colspan=3>&nbsp;<br><strong class="bigsection">Modules</strong></td></tr>
+    
+<tr><td class="decor pkg-content-decor"><span class="code">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></td><td>&nbsp;</td>
+<td class="singlecolumn"><table><tr><td class="multicolumn"><a href="copy.html">copy</a><br>
+</td><td class="multicolumn"><a href="numpy.html">numpy</a><br>
+</td><td class="multicolumn"><a href="sympy.html">sympy</a><br>
+</td><td class="multicolumn"></td></tr></table></td></tr></table><p>
+<table class="section">
+<tr class="decor index-decor heading-text">
+<td class="section-title" colspan=3>&nbsp;<br><strong class="bigsection">Classes</strong></td></tr>
+    
+<tr><td class="decor index-decor"><span class="code">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></td><td>&nbsp;</td>
+<td class="singlecolumn"><dl>
+<dt class="heading-text"><a href="builtins.html#object">builtins.object</a>
+</dt><dd>
+<dl>
+<dt class="heading-text"><a href="Solver.html#PDEFunction">PDEFunction</a>
+</dt><dt class="heading-text"><a href="Solver.html#TestPDEFunction">TestPDEFunction</a>
+</dt></dl>
+</dd>
+</dl>
+ <p>
+<table class="section">
+<tr class="decor title-decor heading-text">
+<td class="section-title" colspan=3>&nbsp;<br><a name="PDEFunction">class <strong>PDEFunction</strong></a>(<a href="builtins.html#object">builtins.object</a>)</td></tr>
+    
+<tr><td class="decor title-decor" rowspan=2><span class="code">&nbsp;&nbsp;&nbsp;</span></td>
+<td class="decor title-decor" colspan=2><span class="code"><a href="#PDEFunction">PDEFunction</a>(expr:&nbsp;sympy.core.expr.Expr,&nbsp;**symbols:&nbsp;sympy.core.symbol.Symbol)&nbsp;-&amp;gt;&nbsp;None<br>
+&nbsp;<br>
+利用sympy对表达式进行化简<br>
+利用sympy对表达式进行化简<br>
+@deprecated&nbsp;由于速度太慢，不建议使用<br>&nbsp;</span></td></tr>
+<tr><td>&nbsp;</td>
+<td class="singlecolumn">Methods defined here:<br>
+<dl><dt><a name="PDEFunction-__init__"><strong>__init__</strong></a>(self, expr: sympy.core.expr.Expr, **symbols: sympy.core.symbol.Symbol) -&gt; None</dt><dd><span class="code">构建表达式，以供计算<br>
+@param&nbsp;expr&nbsp;待计算的表达式<br>
+@param&nbsp;symbols&nbsp;符号对应表，a,b,c,d,e分别代表<br>
+$\frac{\partial^2&nbsp;U}{\partial&nbsp;x^2}$,<br>
+$\frac{\partial^2&nbsp;U}{\partial&nbsp;x&nbsp;\partial&nbsp;y}$,<br>
+$\frac{\partial^2&nbsp;U}{\partial&nbsp;y^2}$,<br>
+$\frac{\partial&nbsp;U}{\partial&nbsp;x}$,<br>
+$\frac{\partial&nbsp;U}{\partial&nbsp;y}$<br>
+以及x,y</span></dd></dl>
+
+<dl><dt><a name="PDEFunction-solve"><strong>solve</strong></a>(self, canvas: list[list[float]], mask: list[list[bool]], xBegin: float = 0, yBegin: float = 0, dealta: float = 1, default: float = 0.0, maxIter: int = 100) -&gt; list[list[float]]</dt><dd><span class="code">对函数进行数值求解<br>
+@param&nbsp;canvas&nbsp;初始值，并且限定画布范围<br>
+@param&nbsp;mask&nbsp;掩码，用于确定画布上的那些值是固定不变的，标记为True<br>
+@param&nbsp;xBegin&nbsp;确定画布上[0][0]的点代表的x的值<br>
+@param&nbsp;yBegin&nbsp;确定画布上[0][0]的点代表的y的值<br>
+@param&nbsp;delta&nbsp;各相邻点之间所代表的x或y值之差<br>
+@param&nbsp;default&nbsp;画布边界点的默认值<br>
+@param&nbsp;maxIter&nbsp;迭代次数<br>
+@return&nbsp;计算结果画布</span></dd></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><span class="code">dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</span></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><span class="code">list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</span></dd>
+</dl>
+<hr>
+Data and other attributes defined here:<br>
+<dl><dt><strong>__annotations__</strong> = {'_PDEFunction__centre': typing.Final[sympy.core.symbol.Symbol], '_PDEFunction__expr': &lt;class 'sympy.core.expr.Expr'&gt;, '_PDEFunction__symbols': dict[str, sympy.core.symbol.Symbol]}</dl>
+
+</td></tr></table> <p>
+<table class="section">
+<tr class="decor title-decor heading-text">
+<td class="section-title" colspan=3>&nbsp;<br><a name="TestPDEFunction">class <strong>TestPDEFunction</strong></a>(<a href="builtins.html#object">builtins.object</a>)</td></tr>
+    
+<tr><td class="decor title-decor" rowspan=2><span class="code">&nbsp;&nbsp;&nbsp;</span></td>
+<td class="decor title-decor" colspan=2><span class="code"><a href="#TestPDEFunction">TestPDEFunction</a>(A:&nbsp;Callable[[numpy.ndarray,&nbsp;numpy.ndarray],&nbsp;Union[numpy.ndarray,&nbsp;float]]&nbsp;=&nbsp;&amp;lt;function&nbsp;<a href="#TestPDEFunction">TestPDEFunction</a>.&amp;lt;lambda&amp;gt;&nbsp;at&nbsp;0x00000248D5D80540&amp;gt;,&nbsp;B:&nbsp;Callable[[numpy.ndarray,&nbsp;numpy.ndarray],&nbsp;Union[numpy.ndarray,&nbsp;float]]&nbsp;=&nbsp;&amp;lt;function&nbsp;<a href="#TestPDEFunction">TestPDEFunction</a>.&amp;lt;lambda&amp;gt;&nbsp;at&nbsp;0x00000248E29B00E0&amp;gt;,&nbsp;C:&nbsp;Callable[[numpy.ndarray,&nbsp;numpy.ndarray],&nbsp;Union[numpy.ndarray,&nbsp;float]]&nbsp;=&nbsp;&amp;lt;function&nbsp;<a href="#TestPDEFunction">TestPDEFunction</a>.&amp;lt;lambda&amp;gt;&nbsp;at&nbsp;0x00000248E29B1F80&amp;gt;,&nbsp;D:&nbsp;Callable[[numpy.ndarray,&nbsp;numpy.ndarray],&nbsp;Union[numpy.ndarray,&nbsp;float]]&nbsp;=&nbsp;&amp;lt;function&nbsp;<a href="#TestPDEFunction">TestPDEFunction</a>.&amp;lt;lambda&amp;gt;&nbsp;at&nbsp;0x00000248E29B2020&amp;gt;,&nbsp;E:&nbsp;Callable[[numpy.ndarray,&nbsp;numpy.ndarray],&nbsp;Union[numpy.ndarray,&nbsp;float]]&nbsp;=&nbsp;&amp;lt;function&nbsp;<a href="#TestPDEFunction">TestPDEFunction</a>.&amp;lt;lambda&amp;gt;&nbsp;at&nbsp;0x00000248E29B20C0&amp;gt;,&nbsp;F:&nbsp;Callable[[numpy.ndarray,&nbsp;numpy.ndarray],&nbsp;Union[numpy.ndarray,&nbsp;float]]&nbsp;=&nbsp;&amp;lt;function&nbsp;<a href="#TestPDEFunction">TestPDEFunction</a>.&amp;lt;lambda&amp;gt;&nbsp;at&nbsp;0x00000248E29B2160&amp;gt;)&nbsp;-&amp;gt;&nbsp;None<br>
+&nbsp;<br>
+利用numpy对表达式进行并行计算<br>
+函数应先化简为标准形式，并给出各个系数的表达式<br>
+$$<br>
+A\frac{\partial^2&nbsp;U}{\partial&nbsp;x^2}+<br>
+B\frac{\partial^2&nbsp;U}{\partial&nbsp;x&nbsp;\partial&nbsp;y}+<br>
+C\frac{\partial^2&nbsp;U}{\partial&nbsp;y^2}+<br>
+D\frac{\partial&nbsp;U}{\partial&nbsp;x}+<br>
+E\frac{\partial&nbsp;U}{\partial&nbsp;y}=<br>
+F<br>
+$$<br>&nbsp;</span></td></tr>
+<tr><td>&nbsp;</td>
+<td class="singlecolumn">Methods defined here:<br>
+<dl><dt><a name="TestPDEFunction-__init__"><strong>__init__</strong></a>(self, A: Callable[[numpy.ndarray, numpy.ndarray], Union[numpy.ndarray, float]] = &lt;function TestPDEFunction.&lt;lambda&gt; at 0x00000248D5D80540&gt;, B: Callable[[numpy.ndarray, numpy.ndarray], Union[numpy.ndarray, float]] = &lt;function TestPDEFunction.&lt;lambda&gt; at 0x00000248E29B00E0&gt;, C: Callable[[numpy.ndarray, numpy.ndarray], Union[numpy.ndarray, float]] = &lt;function TestPDEFunction.&lt;lambda&gt; at 0x00000248E29B1F80&gt;, D: Callable[[numpy.ndarray, numpy.ndarray], Union[numpy.ndarray, float]] = &lt;function TestPDEFunction.&lt;lambda&gt; at 0x00000248E29B2020&gt;, E: Callable[[numpy.ndarray, numpy.ndarray], Union[numpy.ndarray, float]] = &lt;function TestPDEFunction.&lt;lambda&gt; at 0x00000248E29B20C0&gt;, F: Callable[[numpy.ndarray, numpy.ndarray], Union[numpy.ndarray, float]] = &lt;function TestPDEFunction.&lt;lambda&gt; at 0x00000248E29B2160&gt;) -&gt; None</dt><dd><span class="code">构建表达式，以供计算<br>
+其中，A,B,C不应该全为零<br>
+@param&nbsp;A&nbsp;系数A，关于x,y的表达式<br>
+@param&nbsp;B&nbsp;系数B，关于x,y的表达式<br>
+@param&nbsp;C&nbsp;系数C，关于x,y的表达式<br>
+@param&nbsp;D&nbsp;系数D，关于x,y的表达式<br>
+@param&nbsp;E&nbsp;系数E，关于x,y的表达式<br>
+@param&nbsp;F&nbsp;系数F，关于x,y的表达式</span></dd></dl>
+
+<dl><dt><a name="TestPDEFunction-solve"><strong>solve</strong></a>(self, canvas: numpy.ndarray, mask: numpy.ndarray, xBegin: float = 0, yBegin: float = 0, dealta: float = 1, maxIter: int = 100, expansion: int = 2) -&gt; numpy.ndarray</dt><dd><span class="code">对函数进行数值求解<br>
+@param&nbsp;canvas&nbsp;初始值，并且限定画布范围<br>
+@param&nbsp;mask&nbsp;掩码，用于确定画布上的那些值是固定不变的，标记为True<br>
+@param&nbsp;xBegin&nbsp;确定画布上[0][0]的点代表的x的值<br>
+@param&nbsp;yBegin&nbsp;确定画布上[0][0]的点代表的y的值<br>
+@param&nbsp;delta&nbsp;各相邻点之间所代表的x或y值之差<br>
+@param&nbsp;maxIter&nbsp;迭代次数<br>
+@param&nbsp;expansion&nbsp;在计算前将画布扩大，以提升精确度<br>
+@return&nbsp;计算结果画布</span></dd></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><span class="code">dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</span></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><span class="code">list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</span></dd>
+</dl>
+<hr>
+Data and other attributes defined here:<br>
+<dl><dt><strong>__annotations__</strong> = {'_TestPDEFunction__args': list[typing.Callable[[numpy.ndarray, numpy.ndarray], typing.Union[numpy.ndarray, float]]]}</dl>
+
+</td></tr></table></td></tr></table><p>
+<table class="section">
+<tr class="decor data-decor heading-text">
+<td class="section-title" colspan=3>&nbsp;<br><strong class="bigsection">Data</strong></td></tr>
+    
+<tr><td class="decor data-decor"><span class="code">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></td><td>&nbsp;</td>
+<td class="singlecolumn"><strong>Callable</strong> = typing.Callable<br>
+<strong>Final</strong> = typing.Final<br>
+<strong>Union</strong> = typing.Union<br>
+<strong>factor_</strong> = typing.Callable[[numpy.ndarray, numpy.ndarray], typing.Union[numpy.ndarray, float]]</td></tr></table>
+</body></html>
