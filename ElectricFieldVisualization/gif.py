@@ -30,7 +30,7 @@ canvas = numpy.zeros((Nmax, Nmax), float)
 # 我们还构建了41*41的掩码画布，并设置它们全为False
 mask = numpy.zeros((Nmax, Nmax), bool)
 
-mask[20,20] = True
+mask[20, 20] = True
 # 且标定第一列为固定值
 mask[:, 0:1] = True
 # 这里还固定了最后一列为固定值
@@ -48,19 +48,54 @@ for i in range(Nmax):
     y.append(i)
 X, Y = numpy.meshgrid(x, y)
 
-for i in range(201):
-    canvas[20,20] = (i*50)**(1/2)
+# for i in range(201):
+#     canvas[20, 20] = (i * 50) ** (1 / 2)
+#     z = func.solve(canvas, mask, maxIter=1024, expansion=2)
+
+#     # 这个部分和test1相同是通过设定x轴，y轴，z轴，颜色，标签等属性
+#     # 并使用matplotlib.pylab将结果以图像的形式呈现出来
+#     fig = p.figure(dpi=300)
+#     ax = fig.add_axes((0, 0, 1, 1), projection="3d")
+#     ax.plot_wireframe(X, Y, z, color="r")  # type: ignore
+#     ax.set_xlabel("X")
+#     ax.set_ylabel("Y")
+#     ax.set_zlabel("Potential")  # type: ignore
+#     ax.set_zticks(numpy.linspace(0, 100, 11))  # type: ignore
+#     fig.add_axes(ax)
+#     fig.savefig(os.path.join(os.path.dirname(__file__), "gif", str(i) + ".png"))
+#     p.close(fig)
+
+for i in range(16):
+    canvas = numpy.zeros((Nmax, Nmax), float)
+    canvas[20 - i, 20 - i] = 100
+    canvas[20 - i, 20 + i] = 100
+    canvas[20 + i, 20 - i] = 100
+    canvas[20 + i, 20 + i] = 100
+    canvas[20, 20] = 100
+    mask = numpy.zeros((Nmax, Nmax), bool)
+    mask[20 - i, 20 - i] = True
+    mask[20 - i, 20 + i] = True
+    mask[20 + i, 20 - i] = True
+    mask[20 + i, 20 + i] = True
+    mask[20, 20] = True
+    # 且标定第一列为固定值
+    mask[:, 0:1] = True
+    # 这里还固定了最后一列为固定值
+    mask[:, -1:] = True
+    # 首行与首列也为固定值
+    mask[0:1, :] = True
+    mask[-1:, :] = True
     z = func.solve(canvas, mask, maxIter=1024, expansion=2)
 
     # 这个部分和test1相同是通过设定x轴，y轴，z轴，颜色，标签等属性
     # 并使用matplotlib.pylab将结果以图像的形式呈现出来
     fig = p.figure(dpi=300)
     ax = fig.add_axes((0, 0, 1, 1), projection="3d")
-    ax.plot_wireframe(X, Y, z, color="r") # type: ignore
+    ax.plot_wireframe(X, Y, z, color="r")  # type: ignore
     ax.set_xlabel("X")
     ax.set_ylabel("Y")
-    ax.set_zlabel("Potential") # type: ignore
-    ax.set_zticks(numpy.linspace(0,100,11)) # type: ignore
+    ax.set_zlabel("Potential")  # type: ignore
+    ax.set_zticks(numpy.linspace(0, 100, 11))  # type: ignore
     fig.add_axes(ax)
-    fig.savefig(os.path.join(os.path.dirname(__file__),"gif",str(i)+".png"))
+    fig.savefig(os.path.join(os.path.dirname(__file__), "gif", "z" + str(i) + ".png"))
     p.close(fig)
